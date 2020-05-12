@@ -30,14 +30,14 @@ def post_login():
 
 @app.route('/js/signum-bundle.js')
 def get_signum_bundle():
-    resp = requests.get("https://raw.githubusercontent.com/metormaon/signum-js/noam-adapt-login-function-to-reality/js/signum-bundle.js")
+    resp = requests.get("https://raw.githubusercontent.com/metormaon/signum-js/master/js/signum-bundle.js")
 
     return Response(resp.content, resp.status_code, {"Content-type": "application/javascript"})
 
 
 @app.route('/signum-bundle.min.js')
 def get_signum_bundle_min():
-    resp = requests.get("https://raw.githubusercontent.com/metormaon/signum-js/noam-adapt-login-function-to-reality/js/signum-bundle.min.js")
+    resp = requests.get("https://raw.githubusercontent.com/metormaon/signum-js/master/js/signum-bundle.min.js")
 
     return Response(resp.content, resp.status_code, {"Content-type": "application/javascript"})
 

@@ -9,6 +9,14 @@
             },
             "csrfToken": {
                 "require": true
+            },
+            "tolerance": {
+                "passphraseMinimalLength": 20
+            },
+            "hashing": {
+                saltHashByUsername: true,
+                hashCycles: 3,
+                resultLength: 20
             }
         }""",
         "state": "sdfsdfsd",
@@ -32,6 +40,7 @@
                 Signum.executeLogin(
                     document.getElementById("username").value,
                         document.getElementById("password").value,
+                        "captcha",
                         "login",
                     ${login_details["server-instructions"]},
                 window.location.pathname, "${login_details['state']}",document.getElementById("csrf").value)
