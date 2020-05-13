@@ -9,6 +9,14 @@
             },
             "csrfToken": {
                 "require": true
+            },
+            "tolerance": {
+                "passphraseMinimalLength": 20
+            },
+            "hashing": {
+                saltHashByUsername: true,
+                hashCycles: 3,
+                resultLength: 20
             }
         }""",
         "state": "sdfsdfsd",
@@ -30,29 +38,34 @@
         <script type="module">
             window.runSubmitLogin = function runSubmitLogin(){
                 Signum.executeLogin(
-                    document.getElementById("username"),
-                        document.getElementById("password"),
+                    document.getElementById("username").value,
+                        document.getElementById("password").value,
+                        "captcha",
                         "login",
                     ${login_details["server-instructions"]},
-                window.location.pathname, "${login_details['state']}",document.getElementById("csrf"));
+                window.location.pathname, "${login_details['state']}",document.getElementById("csrf").value)
+                        .then(res => {
+                            if (res.status === "success") {
+                                window.location.href="post-login";
+                            }
+                        });
 
                 return false;
             }
         </script>
     </head>
     <body>
-        <form onsubmit="return runSubmitLogin();" action="">
-            <label>Username:
-                <input type="text" placeholder="Enter your username" name="username" id="username" required value="a">
-            </label>
-            <br>
-            <label>Password:
-                <input type="password" placeholder="Enter your password" name="password" id="password" required value="b">
-            </label>
-            <input type="hidden" name="csrf" id="csrf" required value="${login_details["csrfToken"]}">
+        <label>Username:
+            <input type="text" placeholder="Enter your username" name="username" id="username" required value="a">
+        </label>
+        <br>
+        <label>Password:
+            <input type="password" placeholder="Enter your password" name="password" id="password" required value="b">
+        </label>
+        <input type="hidden" name="csrf" id="csrf" required value="${login_details["csrfToken"]}">
 
-            <button type="submit">Login</button>
-        </form>
-        <img src="${login_details["captcha"]}">
+        <img src="${login_details["captcha"]}" alt="CAPTCHA">
+
+        <button onclick="runSubmitLogin();">Login</button>
     </body>
 </html>

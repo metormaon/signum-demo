@@ -1,3 +1,4 @@
+import json
 import os
 
 import requests
@@ -19,17 +20,30 @@ def login_form():
 
 @app.route('/login', methods=['POST'])
 def login():
+    return Response(json.dumps({"status": "success"}), 200, {"Content-type": "application/json"})
+
+
+@app.route('/post-login')
+def post_login():
     return render_template('post_login.html', name='mako')
 
-@app.route('/signum-bundle.min.js')
-def get_signum():
-    resp = requests.get("https://raw.githubusercontent.com/metormaon/signum-js/noam-adapt-login-function-to-reality/js/signum-bundle.min.js")
 
-    return Response(resp.content, resp.status_code, {"Content-type": "application/javascript", "Cache-Control": "no-cache"})
+@app.route('/js/signum-bundle.js')
+def get_signum_bundle():
+    resp = requests.get("https://raw.githubusercontent.com/metormaon/signum-js/master/js/signum-bundle.js")
+
+    return Response(resp.content, resp.status_code, {"Content-type": "application/javascript"})
+
+
+@app.route('/signum-bundle.min.js')
+def get_signum_bundle_min():
+    resp = requests.get("https://raw.githubusercontent.com/metormaon/signum-js/master/js/signum-bundle.min.js")
+
+    return Response(resp.content, resp.status_code, {"Content-type": "application/javascript"})
 
 
 @app.route('/signum-bundle.min.js.map')
-def get_signum_map():
+def get_signum_bundle_min_map():
     resp = requests.get("https://raw.githubusercontent.com/metormaon/signum-js/noam-adapt-login-function-to-reality/js/signum-bundle.min.js.map")
 
     return Response(resp.content, resp.status_code, {"Content-type": "application/json", "Cache-Control": "no-cache"})
