@@ -23,6 +23,8 @@ def validate_login(req: request, state_encryptor: StateEncryptor) -> Tuple[bool,
 
         state = state_encryptor.decrypt_state(state.encode())
 
+        state
+
     # Host: 127.0.0.1:5000
         # Connection: keep-alive
         # Content-Length: 15
