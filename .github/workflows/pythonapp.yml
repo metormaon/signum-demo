@@ -17,12 +17,9 @@ jobs:
       with:
         python-version: 3.8
     - name: Install dependencies
-      with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
       run: |
         pip install wheel
         python -m pip install --upgrade pip
-        python -m pip install git+http://github.com/metormaon/signum-py.git@noam-state
         pip install -r requirements.txt
     - name: Lint with flake8
       run: |
