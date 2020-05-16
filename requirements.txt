@@ -1,4 +1,5 @@
-flask
+flask~=1.1.2
 flask_cors
 flask_mako
-requests
+requests~=2.23.0
+git+http://github.com/metormaon/signum-py.git@noam-state
