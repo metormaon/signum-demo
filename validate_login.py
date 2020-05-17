@@ -1,51 +1,75 @@
+import datetime
 import json
-from typing import Tuple
+from typing import Tuple, Set
 
-from flask import request, jsonify
+from flask import request
 from signum import util
 from signum.state import StateEncryptor
 
 
+# TODO: move, of course, to python library
+# TODO: need to know policy! not all should be validated
 def validate_login(req: request, state_encryptor: StateEncryptor) -> Tuple[bool, object]:
     try:
+        # Concept: fail as dast as possible
+
+        if not request.referrer:
+            return failure("referrer", "not provided")
+
+        acceptable_referrer = 'http://%s/' % request.host
+
+        if request.referrer != acceptable_referrer:
+            return failure("referrer", "doesn't match")
+
+        csrf = req.headers.get("X-Csrf-Token")
+
+        if not csrf:
+            return failure("csrf", "not provided")
+
+        captcha = req.headers.get("X-Captcha")
+
+        if not captcha:
+            return failure("captcha", "not provided")
+
         hashcash = req.headers.get("X-Hashcash")
 
         if not hashcash:
-            return failure("hashcash", "not_provided")
+            return failure("hashcash", "not provided")
 
         zeros, timestamp, ip, server_string, _, _ = hashcash.split(":")
 
-        if not util.validate_hashcash_zeros(hashcash, int(zeros)):
+        timestamp_object = datetime.datetime.strptime(timestamp, "%Y%m%d-%H%M%S")
+
+        diff_in_seconds = (datetime.datetime.utcnow() - timestamp_object).total_seconds()
+
+        # TODO: use configuration. Same value as the tolerance
+        if not 0 < diff_in_seconds <= 120:
+            return failure("hashcash", "timestamp doesn't match")
+
+        if request.remote_addr not in {ip, "127.0.0.1"}:
+            return failure("hashcash", "ip address doesn't match")
+
+        if not util.validate_hashcash_zeros(bytes(hashcash, "utf-8"), int(zeros)):
             return failure("hashcash", "zeros not validated")
 
         data = json.loads(request.data.decode("utf-8"))
-        state = data["state"]
+        encrypted_state = data["state"]
 
-        state = state_encryptor.decrypt_state(state.encode())
+        state = state_encryptor.decrypt_state(encrypted_state.encode())
 
-        state
+        if int(zeros) != int(state["hashcash"]["zero_count"]):
+            return failure("hashcash", "zeros don't match")
 
-    # Host: 127.0.0.1:5000
-        # Connection: keep-alive
-        # Content-Length: 15
-        # X-Hashcash: 15:20200516-184239:82.81.223.44:G5V-uz1mchswi07fqx0QumL8LO0:MS4zMzczODkzNzkyNzY0MDM0ZSszMDc=:MjIwMQ==
-        # X-Csrf-Token: _jiAGTtAie0HU3xksfKt9xkwPSk
-        # X-Username: a
-        # User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36
-        # X-Hashed-Passtext: 414370292207eb05cd88
-        # Content-Type: application/json;charset=UTF-8
-        # Accept: */*
-        # Origin: http://127.0.0.1:5000
-        # Sec-Fetch-Site: same-origin
-        # Sec-Fetch-Mode: cors
-        # Sec-Fetch-Dest: empty
-        # Referer: http://127.0.0.1:5000/
-        # Accept-Encoding: gzip, deflate, br
-        # Accept-Language: en-US,en;q=0.9,he;q=0.8,ar;q=0.7,fr;q=0.6
-        #
-        #  b'[object Object]'
+        if server_string != state["hashcash"]["server_string"]:
+            return failure("hashcash", "server string doesn't match")
 
+        if csrf != state["csrf_token"]:
+            return failure("csrf", "csrf token doesn't match")
 
+        captcha_solutions = set(state["captcha_solutions"])
+
+        if captcha not in captcha_solutions:
+            return failure("captcha", "captcha solution doesn't match")
 
         return True, {
             "visible_response": {
