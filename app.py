@@ -1,14 +1,16 @@
 import json
 import os
+from typing import Tuple
 
 import requests
 from flask import Flask, Response, send_from_directory, request, abort, jsonify
 from flask_mako import MakoTemplates, render_template
+from signum.staller import Staller, T
 from signum.state import StateEncryptor
 
 from file_password_repository import FilePasswordRepository
 from prepare_login_form import prepare_login_form
-from validate_login import validate_login
+from validate_login import validate_login, extract_request_details
 
 app = Flask(__name__)
 app.template_folder = "templates"
@@ -29,6 +31,9 @@ password_database: FilePasswordRepository = FilePasswordRepository("our salt", o
 
 password_database.save_password("noam", "1af70bdd17d953549315")
 
+# TODO: from config
+staller = Staller(5000, cut_if_delayed=True)
+
 
 @app.route('/')
 def login_form():
@@ -42,7 +47,31 @@ def post_login():
 
 @app.route('/submit-login', methods=['POST'])
 def submit_login():
-    validation, details = validate_login(request, state_encryptor, password_database)
+    class LoginValidator(Staller.Stallable):
+        def __init__(self):
+            self.result: Tuple[bool, object] = (False, None)
+
+        def do_work(self, *args, **kwargs) -> None:
+            self.result = validate_login(request_details=request_details, headers=headers,
+                                         state_encryptor=state_encryptor, password_database=password_database)
+
+        def get_result(self) -> (bool, object):
+            return self.result
+
+        def interrupt(self):
+            pass
+
+        def was_successful(self) -> bool:
+            return self.result[0]
+
+    login_validator = LoginValidator()
+
+    request_details, headers = extract_request_details(request)
+
+    staller.stall(login_validator, request_details=request_details, headers=headers, state_encryptor=state_encryptor,
+                  password_database=password_database)
+
+    validation, details = login_validator.get_result()
 
     user_response = jsonify(details["visible_response"])
     if validation:

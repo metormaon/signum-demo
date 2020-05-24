@@ -1,6 +1,6 @@
 import datetime
 import json
-from typing import Tuple, Set
+from typing import Tuple, Dict
 
 from flask import request
 from signum import util
@@ -8,42 +8,52 @@ from signum.password_repository import PasswordRepository
 from signum.state import StateEncryptor
 
 
+def extract_request_details(req: request) -> Tuple[Dict[str, str], Dict[str, str]]:
+    return {
+        "referrer": req.referrer,
+        "host": req.host,
+        "remote_addr": req.remote_addr,
+        "body": req.data.decode("utf-8")
+    }, req.headers
+
+
 # TODO: move, of course, to python library
 # TODO: need to know policy! not all should be validated
-def validate_login(req: request, state_encryptor: StateEncryptor, password_database: PasswordRepository) -> \
+def validate_login(request_details: Dict[str, str], headers: Dict[str, str], state_encryptor: StateEncryptor,
+                   password_database: PasswordRepository) -> \
         Tuple[bool, object]:
     try:
         # Concept: fail as fast as possible
 
-        if not request.referrer:
+        if not request_details["referrer"]:
             return failure("referrer", "not provided")
 
-        acceptable_referrer = 'http://%s/' % request.host
+        acceptable_referrer = 'http://%s/' % request_details["host"]
 
-        if request.referrer != acceptable_referrer:
+        if request_details["referrer"] != acceptable_referrer:
             return failure("referrer", "doesn't match")
 
-        username = req.headers.get("X-Username")
+        username = headers.get("X-Username")
 
         if not username:
             return failure("username", "not provided")
 
-        password = req.headers.get("X-hashed-Passtext")
+        password = headers.get("X-hashed-Passtext")
 
         if not password:
             return failure("password", "not provided")
 
-        csrf = req.headers.get("X-Csrf-Token")
+        csrf = headers.get("X-Csrf-Token")
 
         if not csrf:
             return failure("csrf", "not provided")
 
-        captcha = req.headers.get("X-Captcha")
+        captcha = headers.get("X-Captcha")
 
         if not captcha:
             return failure("captcha", "not provided")
 
-        hashcash = req.headers.get("X-Hashcash")
+        hashcash = headers.get("X-Hashcash")
 
         if not hashcash:
             return failure("hashcash", "not provided")
@@ -58,13 +68,13 @@ def validate_login(req: request, state_encryptor: StateEncryptor, password_datab
         if not 0 < diff_in_seconds <= 120:
             return failure("hashcash", "timestamp doesn't match")
 
-        if request.remote_addr not in {ip, "127.0.0.1"}:
+        if request_details["remote_addr"] not in {ip, "127.0.0.1"}:
             return failure("hashcash", "ip address doesn't match")
 
         if not util.validate_hashcash_zeros(bytes(hashcash, "utf-8"), int(zeros)):
             return failure("hashcash", "zeros not validated")
 
-        data = json.loads(request.data.decode("utf-8"))
+        data = json.loads(request_details["body"])
         encrypted_state = data["state"]
 
         state = state_encryptor.decrypt_state(encrypted_state.encode())
