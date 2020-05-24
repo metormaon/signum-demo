@@ -4,9 +4,9 @@ import os
 import requests
 from flask import Flask, Response, send_from_directory, request, abort, jsonify
 from flask_mako import MakoTemplates, render_template
-from signum import util
 from signum.state import StateEncryptor
 
+from file_password_repository import FilePasswordRepository
 from prepare_login_form import prepare_login_form
 from validate_login import validate_login
 
@@ -23,6 +23,12 @@ signum_js_path = f"https://raw.githubusercontent.com/metormaon/signum-js/{signum
 state_encryptor = StateEncryptor()
 state_encryptor.start()
 
+# TODO: from config
+password_database: FilePasswordRepository = FilePasswordRepository("our salt", os.path.join(app.root_path, 'resources',
+                                                                                            "password_repository.json"))
+
+password_database.save_password("noam", "1af70bdd17d953549315")
+
 
 @app.route('/')
 def login_form():
@@ -36,7 +42,7 @@ def post_login():
 
 @app.route('/submit-login', methods=['POST'])
 def submit_login():
-    validation, details = validate_login(request, state_encryptor)
+    validation, details = validate_login(request, state_encryptor, password_database)
 
     user_response = jsonify(details["visible_response"])
     if validation:

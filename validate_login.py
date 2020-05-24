@@ -4,14 +4,16 @@ from typing import Tuple, Set
 
 from flask import request
 from signum import util
+from signum.password_repository import PasswordRepository
 from signum.state import StateEncryptor
 
 
 # TODO: move, of course, to python library
 # TODO: need to know policy! not all should be validated
-def validate_login(req: request, state_encryptor: StateEncryptor) -> Tuple[bool, object]:
+def validate_login(req: request, state_encryptor: StateEncryptor, password_database: PasswordRepository) -> \
+        Tuple[bool, object]:
     try:
-        # Concept: fail as dast as possible
+        # Concept: fail as fast as possible
 
         if not request.referrer:
             return failure("referrer", "not provided")
@@ -20,6 +22,16 @@ def validate_login(req: request, state_encryptor: StateEncryptor) -> Tuple[bool,
 
         if request.referrer != acceptable_referrer:
             return failure("referrer", "doesn't match")
+
+        username = req.headers.get("X-Username")
+
+        if not username:
+            return failure("username", "not provided")
+
+        password = req.headers.get("X-hashed-Passtext")
+
+        if not password:
+            return failure("password", "not provided")
 
         csrf = req.headers.get("X-Csrf-Token")
 
@@ -70,6 +82,11 @@ def validate_login(req: request, state_encryptor: StateEncryptor) -> Tuple[bool,
 
         if captcha not in captcha_solutions:
             return failure("captcha", "captcha solution doesn't match")
+
+        passed, reason = password_database.validate_password(username=username, password=password)
+
+        if not passed:
+            return failure("username-password", reason)
 
         return True, {
             "visible_response": {
