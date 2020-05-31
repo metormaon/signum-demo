@@ -1,6 +1,7 @@
 flask~=1.1.2
-flask_cors
-flask_mako
+flask_mako~=0.4
 requests~=2.23.0
-git+http://metormaon:72b78d011c8c59270c7f7f2df8e05941290d4d9b@github.com/metormaon/signum-py.git@noam-authentication-repository
+git+http://metormaon:72b78d011c8c59270c7f7f2df8e05941290d4d9b@github.com/metormaon/signum-py.git@master
 tinydb~=4.1.1
+pyopenssl~=19.1.0
+netifaces~=0.10.9
