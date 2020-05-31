@@ -35,3 +35,4 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
         repository: metormaon/signum-demo
         tags: latest
+        registry: docker.pkg.github.com
