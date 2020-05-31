@@ -43,3 +43,5 @@ jobs:
         repository: metormaon/signum-demo
         tags: latest
         registry: docker.pkg.github.com
+        username: $GITHUB_ACTOR
+        password: ${{ secrets.GITHUB_TOKEN }}
