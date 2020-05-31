@@ -4,3 +4,4 @@ flask_mako
 requests~=2.23.0
 git+http://metormaon:72b78d011c8c59270c7f7f2df8e05941290d4d9b@github.com/metormaon/signum-py.git@noam-authentication-repository
 tinydb~=4.1.1
+selenium~=3.141.0

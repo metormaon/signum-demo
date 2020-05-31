@@ -24,7 +24,7 @@ def prepare_login_form(state_encryptor: StateEncryptor) -> object:
         "csrf_token": csrf_token,
         "hashcash": {
             "server_string": hashcash_server_string,
-            "zero_count": 15
+            "zero_count": 30
         }
     }
     # TODO: add timestamp, ip
