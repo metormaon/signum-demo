@@ -17,6 +17,9 @@ class MyTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         client = docker.from_env()
+        for previous_container in client.containers.list(filters={"ancestor": "signum-demo"}):
+            previous_container.kill()
+
         cls.container = client.containers.run("signum-demo", detach=True, ports={"5000": "5000"})
 
     @classmethod
@@ -25,10 +28,7 @@ class MyTest(unittest.TestCase):
 
     def setUp(self) -> None:
         self.browser = webdriver.Chrome()
-
-    def tearDown(self) -> None:
-        self.browser.close()
-        self.browser.get("http://0.0.0.0:5000/")
+        self.browser.get("http://127.0.0.1:5000/")
         delay = 3  # seconds
         try:
             WebDriverWait(self.browser, delay).until(EC.presence_of_element_located((By.ID, 'username')))
@@ -36,11 +36,15 @@ class MyTest(unittest.TestCase):
         except TimeoutException:
             self.fail("Timeout")
 
+    # chromedriver_binary.chromedriver_filename
+
+    def tearDown(self) -> None:
+        self.browser.close()
+
     def test_x(self):
-        # elem = self.browser.find_element_by_id("username")
-        # elem.clear()
-        # elem.send_keys("yossi")
-        # elem.send_keys(Keys.RETURN)
+        elem = self.browser.find_element_by_id("username")
+        elem.clear()
+        elem.send_keys("yossi")
+        elem.send_keys(Keys.RETURN)
         # assert "No results found." not in self.browser.page_source
-        pass
 
