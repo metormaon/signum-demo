@@ -6,3 +6,5 @@ tinydb~=4.1.1
 pyopenssl~=19.1.0
 netifaces~=0.10.9
 selenium~=3.141.0
+docker~=4.2.0
+chromedriver-binary~=83.0.4103.39.0

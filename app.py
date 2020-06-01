@@ -121,18 +121,22 @@ def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico', mimetype='image/x-icon')
 
 
-@app.route('/stop', methods=['GET'])
+@app.route('/stop')
 def stop():
     stop_function = request.environ.get('werkzeug.server.shutdown')
     if stop_function is None:
         raise RuntimeError('Not running with the Werkzeug Server')
     stop_function()
-    return "Shutting down..."
+
+    raise SystemExit
 
 
 if __name__ == '__main__':
     import atexit
 
-    atexit.register(lambda: state_encryptor.stop())
+    def close_all():
+        state_encryptor.stop()
+
+    atexit.register(close_all)
 
     app.run(host="0.0.0.0", debug=True, use_debugger=False, use_reloader=False, passthrough_errors=False)
