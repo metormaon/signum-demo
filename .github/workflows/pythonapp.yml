@@ -38,7 +38,7 @@ jobs:
       uses: docker/build-push-action@v1
       with:
         repository: metormaon/signum-demo/demo
-        tags: steps.github_branch.outputs.branch
+        tags: ${{ steps.github_branch.outputs.branch }}
         registry: docker.pkg.github.com
         username: $GITHUB_ACTOR
         password: ${{ secrets.GITHUB_TOKEN }}
