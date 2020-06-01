@@ -34,7 +34,7 @@ jobs:
       uses: docker/build-push-action@v1
       with:
         repository: metormaon/signum-demo/demo
-        tags: ${BRANCH_NAME}
+        tags: ${GITHUB_REF##*/}
         registry: docker.pkg.github.com
         username: $GITHUB_ACTOR
         password: ${{ secrets.GITHUB_TOKEN }}
