@@ -30,11 +30,15 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
+    - name: Extract branch name
+      id: github_branch
+      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF##*/})"
+
     - name: Publish Docker
       uses: docker/build-push-action@v1
       with:
         repository: metormaon/signum-demo/demo
-        tags: ${GITHUB_REF##*/}
+        tags: steps.github_branch.outputs.branch
         registry: docker.pkg.github.com
         username: $GITHUB_ACTOR
         password: ${{ secrets.GITHUB_TOKEN }}
