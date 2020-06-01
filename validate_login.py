@@ -1,6 +1,6 @@
 import datetime
 import json
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
 
 from flask import request
 from signum import util
@@ -20,7 +20,7 @@ def extract_request_details(req: request) -> Tuple[Dict[str, str], Dict[str, str
 # TODO: move, of course, to python library
 # TODO: need to know policy! not all should be validated
 def validate_login(request_details: Dict[str, str], headers: Dict[str, str], state_encryptor: StateEncryptor,
-                   password_database: PasswordRepository) -> \
+                   password_database: PasswordRepository, self_ip_addresses: List[str]) -> \
         Tuple[bool, object]:
     try:
         # Concept: fail as fast as possible
@@ -68,8 +68,8 @@ def validate_login(request_details: Dict[str, str], headers: Dict[str, str], sta
         if not 0 < diff_in_seconds <= 120:
             return failure("hashcash", "timestamp doesn't match")
 
-        if request_details["remote_addr"] not in {ip, "127.0.0.1"}:
-            return failure("hashcash", "ip address doesn't match")
+        if request_details["remote_addr"] not in [ip] + self_ip_addresses:
+            return failure("hashcash", "ip address doesn't match: "+request_details["remote_addr"])
 
         if not util.validate_hashcash_zeros(bytes(hashcash, "utf-8"), int(zeros)):
             return failure("hashcash", "zeros not validated")

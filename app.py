@@ -1,7 +1,9 @@
 import json
 import os
+import subprocess
 from typing import Tuple
 
+import netifaces
 import requests
 from flask import Flask, Response, send_from_directory, request, abort, jsonify
 from flask_mako import MakoTemplates, render_template
@@ -12,7 +14,17 @@ from file_password_repository import FilePasswordRepository
 from prepare_login_form import prepare_login_form
 from validate_login import validate_login, extract_request_details
 
+self_ip_addresses = ["127.0.0.1", "0.0.0.0", "localhost"]
+
+try:
+    gateways = netifaces.gateways()
+    self_ip_addresses.append(gateways['default'][netifaces.AF_INET][0])
+except Exception as e:
+    print(str(e))
+    pass
+
 app = Flask(__name__)
+
 app.template_folder = "templates"
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
@@ -53,7 +65,8 @@ def submit_login():
 
         def do_work(self, *args, **kwargs) -> None:
             self.result = validate_login(request_details=request_details, headers=headers,
-                                         state_encryptor=state_encryptor, password_database=password_database)
+                                         state_encryptor=state_encryptor, password_database=password_database,
+                                         self_ip_addresses=self_ip_addresses)
 
         def get_result(self) -> (bool, object):
             return self.result
@@ -78,6 +91,7 @@ def submit_login():
         return user_response, 200
     else:
         print("Failed authentication: " + json.dumps(details))
+        print("Request: " + str(request.__dict__.items()))
         return user_response, 401
 
 
@@ -107,9 +121,18 @@ def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico', mimetype='image/x-icon')
 
 
+@app.route('/stop', methods=['GET'])
+def stop():
+    stop_function = request.environ.get('werkzeug.server.shutdown')
+    if stop_function is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    stop_function()
+    return "Shutting down..."
+
+
 if __name__ == '__main__':
     import atexit
 
     atexit.register(lambda: state_encryptor.stop())
 
-    app.run(debug=True, use_debugger=False, use_reloader=False, passthrough_errors=False)
+    app.run(host="0.0.0.0", debug=True, use_debugger=False, use_reloader=False, passthrough_errors=False)
