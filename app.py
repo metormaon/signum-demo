@@ -12,7 +12,7 @@ from signum.state import StateEncryptor
 
 from file_password_repository import FilePasswordRepository
 from prepare_login_form import prepare_login_form
-from validate_login import validate_login, extract_request_details
+from validate_auth import validate_login, validate_signup, extract_request_details
 
 self_ip_addresses = ["127.0.0.1", "0.0.0.0", "localhost"]
 
@@ -52,9 +52,36 @@ def login_form():
     return render_template('login.html', name='mako', login_details=prepare_login_form(state_encryptor))
 
 
+@app.route('/signup')
+def signup_form():
+    return render_template('signup.html', name='mako', login_details=prepare_login_form(state_encryptor))
+
+
 @app.route('/post-login')
 def post_login():
     return render_template('post_login.html', name='mako', session_key=request.args["session_key"])
+
+
+@app.route('/post-signup')
+def post_signup():
+    return render_template('post_signup.html', name='mako', session_key=request.args["session_key"])
+
+
+@app.route('/submit-signup', methods=['POST'])
+def submit_signup():
+    request_details, headers = extract_request_details(request)
+
+    validation, details = validate_signup(request_details=request_details, headers=headers,
+                                          state_encryptor=state_encryptor, password_database=password_database,
+                                          self_ip_addresses=self_ip_addresses)
+
+    user_response = jsonify(details["visible_response"])
+    if validation:
+        return user_response, 200
+    else:
+        print("Failed authentication: " + json.dumps(details))
+        print("Request: " + str(request.__dict__.items()))
+        return user_response, 401
 
 
 @app.route('/submit-login', methods=['POST'])
