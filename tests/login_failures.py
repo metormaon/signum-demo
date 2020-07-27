@@ -1,3 +1,5 @@
+import os
+import subprocess
 import unittest
 import docker as docker
 from selenium import webdriver
@@ -13,18 +15,26 @@ import chromedriver_binary
 
 class MyTest(unittest.TestCase):
     container = None
-
+    process = None
+    
     @classmethod
     def setUpClass(cls):
-        client = docker.from_env()
-        for previous_container in client.containers.list(filters={"ancestor": "signum-demo"}):
-            previous_container.kill()
+        if os.name != 'nt':
+            client = docker.from_env()
+            for previous_container in client.containers.list(filters={"ancestor": "signum-demo"}):
+                previous_container.kill()
 
-        cls.container = client.containers.run("signum-demo", detach=True, ports={"5000": "5000"})
+            cls.container = client.containers.run("signum-demo", detach=True, ports={"5000": "5000"})
+        else:
+            cls.subprocess = subprocess.Popen("python ../app.py", shell=True)
 
     @classmethod
     def tearDownClass(cls):
-        cls.container.kill()
+        if cls.container:
+            cls.container.kill()
+            
+        if cls.process:
+            cls.subprocess.kill()
 
     def setUp(self) -> None:
         self.browser = webdriver.Chrome()
