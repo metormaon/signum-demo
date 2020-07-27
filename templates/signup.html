@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="robots" content="noindex, nofollow">
+
+    <title>Password Strength Popover - Bootsnipp.com</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <style type="text/css">
+        .popover.primary {
+            border-color: #337ab7;
+        }
+
+        .popover.primary>.arrow {
+            border-top-color: #337ab7;
+        }
+
+        .popover.primary>.popover-title {
+            color: #fff;
+            background-color: #337ab7;
+            border-color: #337ab7;
+        }
+
+        .popover.success {
+            border-color: #d6e9c6;
+        }
+
+        .popover.success>.arrow {
+            border-top-color: #d6e9c6;
+        }
+
+        .popover.success>.popover-title {
+            color: #3c763d;
+            background-color: #dff0d8;
+            border-color: #d6e9c6;
+        }
+
+        .popover.info {
+            border-color: #bce8f1;
+        }
+
+        .popover.info>.arrow {
+            border-top-color: #bce8f1;
+        }
+
+        .popover.info>.popover-title {
+            color: #31708f;
+            background-color: #d9edf7;
+            border-color: #bce8f1;
+        }
+
+        .popover.warning {
+            border-color: #faebcc;
+        }
+
+        .popover.warning>.arrow {
+            border-top-color: #faebcc;
+        }
+
+        .popover.warning>.popover-title {
+            color: #8a6d3b;
+            background-color: #fcf8e3;
+            border-color: #faebcc;
+        }
+
+        .popover.danger {
+            border-color: #ebccd1;
+        }
+
+        .popover.danger>.arrow {
+            border-top-color: #ebccd1;
+        }
+
+        .popover.danger>.popover-title {
+            color: #a94442;
+            background-color: #f2dede;
+            border-color: #ebccd1;
+        }
+    </style>
+
+    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h3>Registration</h3>
+        <hr>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <label>Username</label>
+                    <div class="input-group"> <span class="input-group-addon"><span
+                                class="glyphicon glyphicon-user"></span></span>
+                        <input type="text" class="form-control" name="username" id="username" placeholder="Username">
+                    </div>
+                </div>
+                <! –– password has type of text instead of password just for testing purposes -->
+                    <div class="form-group">
+                        <label>Password</label>
+                        <div class="input-group"> <span class="input-group-addon"><span
+                                    class="glyphicon glyphicon-lock"></span></span>
+                            <input type="text" class="form-control" name="password" id="password" placeholder="Password"
+                                required data-toggle="password_popover" title="Password Strength"
+                                data-content="Enter Password...">
+                        </div>
+                    </div>
+                    <! –– confirm password has type of text instead of password just for testing purposes -->
+                        <div class="form-group">
+                            <label>Confirm Password</label>
+                            <div class="input-group"> <span class="input-group-addon"><span
+                                        class="glyphicon glyphicon-resize-vertical"></span></span>
+                                <input type="text" class="form-control" name="confirm_password" id="confirm_password"
+                                    placeholder="Confirm Password">
+                            </div>
+                        </div>
+                        <input type="hidden" name="csrf" id="csrf" required value="${login_details["csrfToken"]}">
+                        <div class="form-group">
+                            <img src="${login_details["captcha"]}" alt="CAPTCHA">
+                        </div>
+                        <div class="form-group">
+                            <label>Common term</label>
+                            <div class="input-group"> <span class="input-group-addon"><span
+                                        class="glyphicon glyphicon-question-sign"></span></span>
+                                <input type="text" class="form-control" name="captcha" id="captcha"
+                                    placeholder="What do you see in most of the pictures?">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" onclick="runSubmitSignup();" name="submit" id="submit" value="Submit"
+                                class="btn btn-primary pull-right">
+                        </div>
+                        <br>
+                        <br>
+                        <div class="form-group">
+                             <p id="errorMessage" class="pull-right">Please try again</p>
+                        </div>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="signum-bundle.min.js?v=6"></script>
+    <script type="module">
+        $(document).ready(function () {
+            document.getElementById('errorMessage').style.visibility = "hidden";
+
+            $('#password').on('keyup', function () {
+                var password = $(this);
+                var pass = password.val();
+                var stengthString = 'Very Weak';
+                var pclass = 'danger';
+
+                var stength = Signum.passtextStrength(pass, ${login_details['passtextStrength']}, ${login_details['tolerance']});
+
+                if (stength === 5) {
+                    stengthString = 'Very Strong';
+                    pclass = 'success';
+                } else if (stength === 4) {
+                    stengthString = 'Strong';
+                    pclass = 'warning';
+                } else if (stength === 3) {
+                    stengthString = 'Almost Strong';
+                    pclass = 'warning';
+                } else if (stength === 2) {
+                    stengthString = 'Weak';
+                }
+
+                var popover = password.attr('data-content', stengthString).data('bs.popover');
+                popover.setContent();
+                popover.$tip.addClass(popover.options.placement).removeClass('danger success info warning primary').addClass(pclass);
+            });
+
+            $('input[data-toggle="password_popover"]').popover({
+                placement: 'top',
+                trigger: 'focus'
+            });
+        })
+
+        window.validateConfirmPassword = function validateConfirmPassword() {
+            const password = document.getElementById("password");
+            const confirm_password = document.getElementById("confirm_password");
+            return password.value === confirm_password.value;
+        }
+
+        window.validateStrengthPassword = function validateConfirmPassword() {
+            const password = document.getElementById("password");
+            const stength = Signum.passtextStrength(password, ${login_details['passtextStrength']}, ${login_details['tolerance']});
+            return stength >= 4;
+        }
+
+        window.runSubmitSignup = function runSubmitSignup(){
+                if(!validateConfirmPassword() || !validateStrengthPassword()) {
+                    document.getElementById('errorMessage').style.visibility = "visible";
+                    return;
+                }
+
+                Signum.executeSignup(
+                        document.getElementById("username").value, //username
+                        document.getElementById("password").value, //password
+                        "submit-signup", //signupUrl
+                        ${login_details["server-instructions"]}, //server instructions
+                        window.location.pathname, //referrer
+                        "${login_details['state'].decode("utf-8")}", //state
+                        document.getElementById("captcha").value, //captcha
+                        document.getElementById("csrf").value //csrf token
+                ).then(res => {
+                    if (res.passed) {
+                        console.log(res)
+                        window.location.href="post-signup?session_key=" + res.session_key;
+                    }
+                });
+
+                document.getElementById('errorMessage').style.visibility = "visible";
+         }
+    </script>
+</body>
+
+</html>
