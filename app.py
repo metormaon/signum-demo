@@ -48,6 +48,11 @@ staller = Staller(5000, cut_if_delayed=True)
 
 
 @app.route('/')
+def signum_page():
+    return render_template('signum.html', name='mako')
+
+
+@app.route('/login')
 def login_form():
     return render_template('login.html', name='mako', login_details=prepare_login_form(state_encryptor))
 
