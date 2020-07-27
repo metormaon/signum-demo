@@ -44,7 +44,7 @@ def prepare_login_form(state_encryptor: StateEncryptor) -> object:
                 "require": true
             }},
             "tolerance": {{
-                "passphraseMinimalLength": 20
+                "minimumAlphabetPassphrase": 20
             }},
             "hashing": {{
                 saltHashByUsername: true,
@@ -53,7 +53,13 @@ def prepare_login_form(state_encryptor: StateEncryptor) -> object:
             }}
         }}""",
         "state": state_encryptor.encrypt_state(state),
-        "csrfToken": csrf_token
+        "csrfToken": csrf_token,
+        "passtextStrength": f"""{{
+            "minimumCharactersPassword": 8
+        }}""",
+        "tolerance": f"""{{
+            "minimumAlphabetPassphrase": 20
+        }}"""
     }
 
     return login_details
