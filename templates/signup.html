@@ -208,6 +208,7 @@
                     if (res.passed) {
                         console.log(res)
                         window.location.href="post-signup?session_key=" + res.session_key;
+                        return
                     }
                 });
 
