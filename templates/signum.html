@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Signum Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h3>Signum Demo</h3>
+        <hr>
+        <div class="row">
+            <div class="col-lg-6">
+                <button type="button" class="btn btn-primary" data-toggle="button" aria-pressed="false"
+                    autocomplete="off" onclick="runLogin();">
+                    Login
+                </button>
+
+
+                <button type="button" class="btn btn-primary" data-toggle="button" aria-pressed="false"
+                    autocomplete="off" onclick="runSignup();">
+                    Registration
+                </button>
+            </div>
+        </div>
+    </div>
+    <script type="module">
+        window.runLogin = function runLogin() {
+            window.location.href = "/";
+        }
+
+        window.runSignup = function runSignup() {
+            window.location.href = "signup";
+        }
+    </script>
+</body>
+
+</html>
