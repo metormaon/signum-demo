@@ -1,84 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Login</title>
-        <!--suppress HtmlUnknownTarget -->
-        <link rel="shortcut icon" href="/static/favicon.ico">
 
-        <!--suppress HtmlUnknownTarget -->
-        <script type="module" src="signum-bundle.min.js?v=6"></script>
-        <script type="module">
-            window.runSubmitLogin = function runSubmitLogin(){
-                Signum.executeLogin(
-                        document.getElementById("username").value, //username
-                        document.getElementById("password").value, //password
-                        "submit-login", //loginUrl
-                        ${login_details["server-instructions"]}, //server instructions
-                        window.location.pathname, //referrer
-                        "${login_details['state'].decode("utf-8")}", //state
-                        document.getElementById("captcha").value, //captcha
-                        document.getElementById("csrf").value //csrf token
-                ).then(res => {
-                    if (res.passed) {
-                        console.log(res)
-                        window.location.href="post-login?session_key=" + res.session_key;
-                    }
-                });
+<head>
+    <meta charset="utf-8">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+</head>
 
-                return false;
-            }
-        </script>
-        <style>
-            body {
-                background-image: url('/static/lighthouse.jpg');
-                background-size: cover;
-                background-repeat: no-repeat;
-            }
-        </style>
-    </head>
-    <body>
-        <table>
-            <td style="vertical-align:top;">
-                <table>
-                    <tr>
-                        <td>
-                            <label>Username:
-                                <input type="text" placeholder="Enter your username" name="username" id="username" required value="noam">
-                            </label>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label>Password:
-                                <input type="password" placeholder="Enter your password" name="password" id="password" required value="12345">
-                            </label>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="hidden" name="csrf" id="csrf" required value="${login_details["csrfToken"]}">
-                            <button onclick="runSubmitLogin();">Login</button>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-            <td>
-                <table>
-                    <tr>
-                        <td>
+<body>
+    <div class="container">
+        <div class="form-group">
+            <a href="signup">signup</a>
+        </div>
+        <h3>Login</h3>
+        <hr>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <label>Username</label>
+                    <div class="input-group"> <span class="input-group-addon"><span
+                                class="glyphicon glyphicon-user"></span></span>
+                        <input type="text" class="form-control" name="username" id="username" placeholder="Username">
+                    </div>
+                </div>
+                <! –– password has type of text instead of password just for testing purposes -->
+                        <div class="form-group">
+                            <label>Password</label>
+                            <div class="input-group"> <span class="input-group-addon"><span
+                                        class="glyphicon glyphicon-lock"></span></span>
+                                <input type="text" class="form-control" name="password" id="password"
+                                    placeholder="Password">
+                            </div>
+                        </div>
+                        <input type="hidden" name="csrf" id="csrf" required value="${login_details["csrfToken"]}">
+                        <div class="form-group">
                             <img src="${login_details["captcha"]}" alt="CAPTCHA">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label>Common term:
-                                <input type="text" placeholder="What do you see in most of the pictures?" name="captcha" id="captcha" required value="b">
-                            </label>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </table>
-    </body>
+                        </div>
+                        <div class="form-group">
+                            <label>Common term</label>
+                            <div class="input-group"> <span class="input-group-addon"><span
+                                        class="glyphicon glyphicon-question-sign"></span></span>
+                                <input type="text" class="form-control" name="captcha" id="captcha"
+                                    placeholder="What do you see in most of the pictures?">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" onclick="runSubmitLogin();" name="submit" id="submit" value="Submit"
+                                class="btn btn-primary pull-right">
+                        </div>
+                        <br>
+                        <br>
+                        <div class="form-group">
+                             <p id="errorMessage" style="visibility: hidden;" class="pull-right">Please try again</p>
+                        </div>
+            </div>
+        </div>
+   </div>
+    <script type="module" src="signum-bundle.min.js?v=6"></script>
+    <script type="module">
+        $(document).ready(function () {
+            document.getElementById('errorMessage').style.visibility = "hidden";
+        })
+
+         window.runSubmitLogin = function runSubmitLogin() {
+             Signum.executeLogin(
+                 document.getElementById("username").value, //username
+                 document.getElementById("password").value, //password
+                 "submit-login", //loginUrl
+                 ${login_details["server-instructions"]}, //server instructions
+                 window.location.pathname, //referrer
+                 "${login_details['state'].decode("utf-8")}", //state
+                 document.getElementById("captcha").value, //captcha
+                 document.getElementById("csrf").value //csrf token
+         ).
+             then(res => {
+                 if (res.passed) {
+                     console.log(res)
+                     window.location.href = "post-login?session_key=" + res.session_key;
+                     return;
+                 }
+             });
+
+             document.getElementById('errorMessage').style.visibility = "visible";
+         }
+    </script>
+</body>
+
 </html>

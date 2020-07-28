@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="robots" content="noindex, nofollow">
 
-    <title>Password Strength Popover - Bootsnipp.com</title>
+    <title>Registration</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <style type="text/css">
@@ -86,6 +86,9 @@
 
 <body>
     <div class="container">
+        <div class="form-group">
+            <a href="/">login</a>
+        </div>
         <h3>Registration</h3>
         <hr>
         <div class="row">
@@ -208,6 +211,7 @@
                     if (res.passed) {
                         console.log(res)
                         window.location.href="post-signup?session_key=" + res.session_key;
+                        return;
                     }
                 });
 

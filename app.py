@@ -47,6 +47,11 @@ password_database.save_password("noam", "1af70bdd17d953549315")
 staller = Staller(5000, cut_if_delayed=True)
 
 
+@app.route('/signum')
+def signum_page():
+    return render_template('signum.html', name='mako')
+
+
 @app.route('/')
 def login_form():
     return render_template('login.html', name='mako', login_details=prepare_login_form(state_encryptor))
