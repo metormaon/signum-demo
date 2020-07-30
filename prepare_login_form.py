@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Set, Dict, Union
 
 from signum import captcha, util
@@ -20,11 +21,12 @@ def prepare_login_form(state_encryptor: StateEncryptor) -> object:
     hashcash_server_string = util.generate_random_base_64(20)
 
     state = {
+        "server_time": datetime.now().strftime("%Y%m%d-%H%M%S"),
         "captcha_solutions": captcha_solutions,
         "csrf_token": csrf_token,
         "hashcash": {
             "server_string": hashcash_server_string,
-            "zero_count": 30
+            "zero_count": 15
         }
     }
     # TODO: add timestamp, ip

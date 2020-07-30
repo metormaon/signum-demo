@@ -1,11 +1,11 @@
 import os
 import subprocess
+import time
 import unittest
 import docker as docker
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -34,27 +34,41 @@ class MyTest(unittest.TestCase):
             cls.container.kill()
             
         if cls.process:
-            cls.subprocess.kill()
+            cls.process.kill()
 
     def setUp(self) -> None:
         self.browser = webdriver.Chrome()
         self.browser.get("http://127.0.0.1:5000/")
-        delay = 3  # seconds
+        timeout = 3  # seconds
         try:
-            WebDriverWait(self.browser, delay).until(EC.presence_of_element_located((By.ID, 'username')))
-            print("Page is ready!")
+            WebDriverWait(self.browser, timeout).until(EC.presence_of_element_located((By.ID, 'username')))
         except TimeoutException:
             self.fail("Timeout")
-
-    # chromedriver_binary.chromedriver_filename
 
     def tearDown(self) -> None:
         self.browser.close()
 
-    def test_x(self):
-        elem = self.browser.find_element_by_id("username")
-        elem.clear()
-        elem.send_keys("yossi")
-        elem.send_keys(Keys.RETURN)
-        # assert "No results found." not in self.browser.page_source
+    def test_failure(self):
+        username = self.browser.find_element_by_id("username")
+        username.clear()
+        username.send_keys("unregistered_user")
+
+        password = self.browser.find_element_by_id("password")
+        password.clear()
+        password.send_keys("123456")
+
+        captcha = self.browser.find_element_by_id("captcha")
+        captcha.clear()
+        captcha.send_keys("something")
+
+        url = self.browser.current_url
+
+        submit = self.browser.find_element_by_id("submit")
+        submit.click()
+
+        time.sleep(3)
+
+        assert self.browser.current_url == url
+        assert self.browser.find_element_by_id("errorMessage").is_displayed()
+
 

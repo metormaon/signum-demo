@@ -139,7 +139,10 @@ def validate_auth(request_details: Dict[str, str], headers: Dict[str, str], stat
     data = json.loads(request_details["body"])
     encrypted_state = data["state"]
 
-    state = state_encryptor.decrypt_state(encrypted_state.encode())
+    try:
+        state = state_encryptor.decrypt_state(encrypted_state.encode())
+    except ValueError as e:
+        return failure("state", str(e))
 
     if int(zeros) != int(state["hashcash"]["zero_count"]):
         return failure("hashcash", "zeros don't match")
@@ -153,7 +156,7 @@ def validate_auth(request_details: Dict[str, str], headers: Dict[str, str], stat
     captcha_solutions = set(state["captcha_solutions"])
 
     if captcha not in captcha_solutions:
-        return failure("captcha", "captcha solution doesn't match")
+        return failure("captcha", f"captcha solution isn't in {captcha_solutions}")
 
     return True, {
         "visible_response": {

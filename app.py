@@ -1,6 +1,5 @@
 import json
 import os
-import subprocess
 from typing import Tuple
 
 import netifaces
@@ -123,7 +122,7 @@ def submit_login():
         return user_response, 200
     else:
         print("Failed authentication: " + json.dumps(details))
-        print("Request: " + str(request.__dict__.items()))
+        print("Full request: " + str(request.__dict__.items()))
         return user_response, 401
 
 
