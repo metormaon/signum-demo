@@ -100,6 +100,10 @@
                         <input type="text" class="form-control" name="username" id="username" placeholder="Username">
                     </div>
                 </div>
+                <div class="panel panel-danger form-group">
+                   <div class="panel-heading">Password Instructions</div>
+                   <div id ="password-instructions" class="panel-body"></div>
+                </div>
                 <! –– password has type of text instead of password just for testing purposes -->
                     <div class="form-group">
                         <label>Password</label>
@@ -138,7 +142,7 @@
                         <br>
                         <br>
                         <div class="form-group">
-                             <p id="errorMessage" class="pull-right">Please try again</p>
+                             <p id="errorMessage" class="pull-right" style="visibility:hidden">Please try again</p>
                         </div>
             </div>
         </div>
@@ -146,7 +150,23 @@
     <script type="module" src="signum-bundle.min.js?v=6"></script>
     <script type="module">
         $(document).ready(function () {
-            document.getElementById('errorMessage').style.visibility = "hidden";
+            const password_instructions = document.getElementById("password-instructions");
+            password_instructions.innerText = getPasswordInstructions();
+
+            const password = document.getElementById("password")
+            const confirm_password = document.getElementById("confirm_password")
+            const username = document.getElementById("username")
+            const captcha = document.getElementById("captcha")
+
+            addFocusListener(username)
+            addFocusListener(password)
+            addFocusListener(confirm_password)
+            addFocusListener(captcha)
+
+            addSubmitListenr(username)
+            addSubmitListenr(password)
+            addSubmitListenr(confirm_password)
+            addSubmitListenr(captcha)
 
             $('#password').on('keyup', function () {
                 var password = $(this);
@@ -180,6 +200,36 @@
             });
         })
 
+        window.addFocusListener = function addFocusListener(element) {
+            element.addEventListener('click', (event) => {
+                  hideErrorMessage();
+            });
+        }
+
+        window.addSubmitListenr = function addSubmitListener(element){
+            element.addEventListener("keydown", function(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    runSubmitSignup();
+                }
+            });
+        }
+
+        window.hideErrorMessage = function hideErrorMessage() {
+            document.getElementById('errorMessage').style.visibility = "hidden";
+        }
+
+        window.getPasswordInstructions = function getPasswordInstructions() {
+            const minimumCharactersPassword = JSON.parse(JSON.stringify(${login_details['passtextStrength']})).minimumCharactersPassword;
+            const minimumAlphabetPassphrase = JSON.parse(JSON.stringify(${login_details['tolerance']})).minimumAlphabetPassphrase;
+            return "Minimum " + minimumCharactersPassword + " characters in length\n" +
+                    "Contains of the following items:\n" +
+                    "- Uppercase Letters\n" +
+                    "- Lowercase Letters\n" +
+                    "- Numbers Letters or Symbols\n" +
+                    "Or passphrase " + minimumAlphabetPassphrase + " letters in length"
+        }
+
         window.validateConfirmPassword = function validateConfirmPassword() {
             const password = document.getElementById("password");
             const confirm_password = document.getElementById("confirm_password");
@@ -192,13 +242,15 @@
             return stength >= 4;
         }
 
-        window.runSubmitSignup = function runSubmitSignup(){
+        window.runSubmitSignup = async function runSubmitSignup(){
                 if(!validateConfirmPassword() || !validateStrengthPassword()) {
                     document.getElementById('errorMessage').style.visibility = "visible";
                     return;
                 }
 
-                Signum.executeSignup(
+                let res;
+                try {
+                     res = await Signum.executeSignup(
                         document.getElementById("username").value, //username
                         document.getElementById("password").value, //password
                         "submit-signup", //signupUrl
@@ -207,13 +259,18 @@
                         "${login_details['state'].decode("utf-8")}", //state
                         document.getElementById("captcha").value, //captcha
                         document.getElementById("csrf").value //csrf token
-                ).then(res => {
-                    if (res.passed) {
+                      )
+                }catch (e) {
+                     console.log(e)
+                     document.getElementById('errorMessage').style.visibility = "visible";
+                     return;
+                }
+
+                if (res && res.passed) {
                         console.log(res)
                         window.location.href="post-signup?session_key=" + res.session_key;
                         return;
-                    }
-                });
+                }
 
                 document.getElementById('errorMessage').style.visibility = "visible";
          }
