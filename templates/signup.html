@@ -100,8 +100,9 @@
                         <input type="text" class="form-control" name="username" id="username" placeholder="Username">
                     </div>
                 </div>
-                <div class="form-group">
-                    <p id="password-instructions"></p>
+                <div class="panel panel-danger form-group">
+                   <div class="panel-heading">Password Instructions</div>
+                   <div id ="password-instructions" class="panel-body"></div>
                 </div>
                 <! –– password has type of text instead of password just for testing purposes -->
                     <div class="form-group">
@@ -150,8 +151,7 @@
     <script type="module">
         $(document).ready(function () {
             const password_instructions = document.getElementById("password-instructions");
-            const text = document.createTextNode(getPasswordInstructions());
-            password_instructions.appendChild(text);
+            password_instructions.innerText = getPasswordInstructions();
 
             const password = document.getElementById("password")
             const confirm_password = document.getElementById("confirm_password")
@@ -201,7 +201,7 @@
         })
 
         window.addFocusListener = function addFocusListener(element) {
-            element.addEventListener('focus', (event) => {
+            element.addEventListener('click', (event) => {
                   hideErrorMessage();
             });
         }
@@ -222,12 +222,12 @@
         window.getPasswordInstructions = function getPasswordInstructions() {
             const minimumCharactersPassword = JSON.parse(JSON.stringify(${login_details['passtextStrength']})).minimumCharactersPassword;
             const minimumAlphabetPassphrase = JSON.parse(JSON.stringify(${login_details['tolerance']})).minimumAlphabetPassphrase;
-            return "Minimum " + minimumCharactersPassword + " characters in length\n\n" +
-                    "Contains of the following items:\n\n" +
-                    "- Uppercase Letters\n\n" +
-                    "- Lowercase Letters\n\n" +
-                    "- Numbers Letters or Symbols\n\n" +
-                    "Or passphrase " + minimumAlphabetPassphrase + " letters in length\n\n"
+            return "Minimum " + minimumCharactersPassword + " characters in length\n" +
+                    "Contains of the following items:\n" +
+                    "- Uppercase Letters\n" +
+                    "- Lowercase Letters\n" +
+                    "- Numbers Letters or Symbols\n" +
+                    "Or passphrase " + minimumAlphabetPassphrase + " letters in length"
         }
 
         window.validateConfirmPassword = function validateConfirmPassword() {
