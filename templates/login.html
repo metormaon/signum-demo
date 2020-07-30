@@ -63,11 +63,43 @@
     <script type="module" src="signum-bundle.min.js?v=6"></script>
     <script type="module">
         $(document).ready(function () {
-            document.getElementById('errorMessage').style.visibility = "hidden";
+            const password = document.getElementById("password")
+            const username = document.getElementById("username")
+            const captcha = document.getElementById("captcha")
+
+            addFocusListener(username)
+            addFocusListener(password)
+            addFocusListener(captcha)
+
+            addSubmitListenr(username)
+            addSubmitListenr(password)
+            addSubmitListenr(captcha)
         })
 
-         window.runSubmitLogin = function runSubmitLogin() {
-             Signum.executeLogin(
+        window.addFocusListener = function addFocusListener(element) {
+            element.addEventListener('click', (event) => {
+                  hideErrorMessage();
+            });
+        }
+
+        window.addSubmitListenr = function addSubmitListener(element){
+            element.addEventListener("keydown", function(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    runSubmitLogin();
+                }
+            });
+        }
+
+        window.hideErrorMessage = function hideErrorMessage() {
+              document.getElementById('errorMessage').style.visibility = "hidden";
+        }
+
+         window.runSubmitLogin = async function runSubmitLogin() {
+            let res;
+
+            try{
+                res = await Signum.executeLogin(
                  document.getElementById("username").value, //username
                  document.getElementById("password").value, //password
                  "submit-login", //loginUrl
@@ -76,14 +108,18 @@
                  "${login_details['state'].decode("utf-8")}", //state
                  document.getElementById("captcha").value, //captcha
                  document.getElementById("csrf").value //csrf token
-         ).
-             then(res => {
-                 if (res.passed) {
-                     console.log(res)
-                     window.location.href = "post-login?session_key=" + res.session_key;
-                     return;
-                 }
-             });
+             )
+            }catch (e) {
+                console.log(e)
+                document.getElementById('errorMessage').style.visibility = "visible";
+                return;
+            }
+
+             if (res && res.passed) {
+                 console.log(res)
+                 window.location.href = "post-login?session_key=" + res.session_key;
+                 return
+             }
 
              document.getElementById('errorMessage').style.visibility = "visible";
          }
