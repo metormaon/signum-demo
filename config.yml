@@ -1,0 +1,63 @@
+#Signum config
+---
+
+## Server
+server_ip: 0.0.0.0
+server_port: 5000
+
+#The addresses a client call *from the server* may use
+self_ip_addresses:
+  - 127.0.0.1
+  - 0.0.0.0
+  - localhost
+
+#--------------------
+
+## Timeouts
+#seconds from login form download till submission
+login_form_timeout: 300
+
+#seconds from submission till processing (setting high to allow debug)
+submit_timeout: 300
+
+#--------------------
+
+## State management
+#(seconds) frequency of new state encryption key generation
+key_renewal_frequency: 30
+
+#(seconds) time to still accept old state keys. Should be more or less equal to login_form_timeout
+state_aging_tolerance: 330
+
+#--------------------
+
+#Password mechanism
+password_file: password_repository.json
+password_hash_salt: 7N4qR1eGVnWplHk6aEuH
+
+#--------------------
+
+## Staller
+#Complement time to (milliseconds)
+staller_unit_time: 5000
+
+#Complement time even if the tansaction is successful
+stall_if_successful: false
+
+#If the transaction processing time exceeds unit time, fail immediately without waiting to complete
+cut_if_delayed: true
+
+#--------------------
+
+##hashcash
+hashcash_server_string_length: 20
+hashcash_zero_count: 20
+
+#--------------------
+
+##Misc
+csrf_token_length: 20
+
+
+
+...

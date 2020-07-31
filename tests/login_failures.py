@@ -13,7 +13,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import chromedriver_binary
 
 
-class MyTest(unittest.TestCase):
+class TestLogin(unittest.TestCase):
     container = None
     process = None
     
@@ -66,7 +66,7 @@ class MyTest(unittest.TestCase):
         submit = self.browser.find_element_by_id("submit")
         submit.click()
 
-        time.sleep(3)
+        time.sleep(10)
 
         assert self.browser.current_url == url
         assert self.browser.find_element_by_id("errorMessage").is_displayed()
