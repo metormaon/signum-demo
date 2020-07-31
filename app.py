@@ -1,24 +1,26 @@
 import json
 import os
-import subprocess
 from typing import Tuple
 
 import netifaces
 import requests
-from flask import Flask, Response, send_from_directory, request, abort, jsonify
+import yaml
+from flask import Flask, Response, send_from_directory, request, jsonify
 from flask_mako import MakoTemplates, render_template
-from signum.staller import Staller, T
+from signum.staller import Staller
 from signum.state import StateEncryptor
 
 from file_password_repository import FilePasswordRepository
 from prepare_login_form import prepare_login_form
 from validate_auth import validate_login, validate_signup, extract_request_details
 
-self_ip_addresses = ["127.0.0.1", "0.0.0.0", "localhost"]
+with open("config.yml") as config_file:
+    configuration = yaml.load(config_file, Loader=yaml.FullLoader)
+    print(configuration)
 
 try:
     gateways = netifaces.gateways()
-    self_ip_addresses.append(gateways['default'][netifaces.AF_INET][0])
+    configuration["self_ip_addresses"].append(gateways['default'][netifaces.AF_INET][0])
 except Exception as e:
     print(str(e))
     pass
@@ -33,18 +35,15 @@ mako = MakoTemplates(app)
 signum_js_branch = "master"
 signum_js_path = f"https://raw.githubusercontent.com/metormaon/signum-js/{signum_js_branch}/js"
 
-# TODO: use configuration for frequency and tolerance!
-state_encryptor = StateEncryptor()
+state_encryptor = StateEncryptor(configuration["state_aging_tolerance"], configuration["key_renewal_frequency"])
 state_encryptor.start()
 
-# TODO: from config
-password_database: FilePasswordRepository = FilePasswordRepository("our salt", os.path.join(app.root_path, 'resources',
-                                                                                            "password_repository.json"))
+password_database: FilePasswordRepository = FilePasswordRepository(configuration["password_hash_salt"],
+                                                                   os.path.join(app.root_path, 'resources',
+                                                                                configuration["password_file"]))
 
-password_database.save_password("noam", "1af70bdd17d953549315")
-
-# TODO: from config
-staller = Staller(5000, cut_if_delayed=True)
+staller = Staller(configuration["staller_unit_time"], stall_if_successful=configuration["stall_if_successful"],
+                  cut_if_delayed=configuration["cut_if_delayed"])
 
 
 @app.route('/signum')
@@ -54,12 +53,12 @@ def signum_page():
 
 @app.route('/')
 def login_form():
-    return render_template('login.html', name='mako', login_details=prepare_login_form(state_encryptor))
+    return render_template('login.html', name='mako', login_details=prepare_login_form(state_encryptor, configuration))
 
 
 @app.route('/signup')
 def signup_form():
-    return render_template('signup.html', name='mako', login_details=prepare_login_form(state_encryptor))
+    return render_template('signup.html', name='mako', login_details=prepare_login_form(state_encryptor, configuration))
 
 
 @app.route('/post-login')
@@ -78,7 +77,7 @@ def submit_signup():
 
     validation, details = validate_signup(request_details=request_details, headers=headers,
                                           state_encryptor=state_encryptor, password_database=password_database,
-                                          self_ip_addresses=self_ip_addresses)
+                                          configuration=configuration)
 
     user_response = jsonify(details["visible_response"])
     if validation:
@@ -98,7 +97,7 @@ def submit_login():
         def do_work(self, *args, **kwargs) -> None:
             self.result = validate_login(request_details=request_details, headers=headers,
                                          state_encryptor=state_encryptor, password_database=password_database,
-                                         self_ip_addresses=self_ip_addresses)
+                                         configuration=configuration)
 
         def get_result(self) -> (bool, object):
             return self.result
@@ -123,7 +122,7 @@ def submit_login():
         return user_response, 200
     else:
         print("Failed authentication: " + json.dumps(details))
-        print("Request: " + str(request.__dict__.items()))
+        print("Full request: " + str(request.__dict__.items()))
         return user_response, 401
 
 
@@ -153,18 +152,23 @@ def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico', mimetype='image/x-icon')
 
 
-@app.route('/stop', methods=['GET'])
+@app.route('/stop')
 def stop():
     stop_function = request.environ.get('werkzeug.server.shutdown')
     if stop_function is None:
         raise RuntimeError('Not running with the Werkzeug Server')
     stop_function()
-    return "Shutting down..."
+
+    raise SystemExit
 
 
 if __name__ == '__main__':
     import atexit
 
-    atexit.register(lambda: state_encryptor.stop())
+    def close_all():
+        state_encryptor.stop()
 
-    app.run(host="0.0.0.0", debug=True, use_debugger=False, use_reloader=False, passthrough_errors=False)
+    atexit.register(close_all)
+
+    app.run(host=configuration["server_ip"], port=configuration["server_port"],
+            debug=True, use_debugger=False, use_reloader=False, passthrough_errors=False)
