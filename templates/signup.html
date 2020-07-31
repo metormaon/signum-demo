@@ -8,6 +8,7 @@
     <title>Registration</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style type="text/css">
         .popover.primary {
             border-color: #337ab7;
@@ -104,22 +105,20 @@
                    <div class="panel-heading">Password Instructions</div>
                    <div id ="password-instructions" class="panel-body"></div>
                 </div>
-                <! –– password has type of text instead of password just for testing purposes -->
                     <div class="form-group">
                         <label>Password</label>
                         <div class="input-group"> <span class="input-group-addon"><span
                                     class="glyphicon glyphicon-lock"></span></span>
-                            <input type="text" class="form-control" name="password" id="password" placeholder="Password"
+                            <input type="password" class="form-control" name="password" id="password" placeholder="Password"
                                 required data-toggle="password_popover" title="Password Strength"
                                 data-content="Enter Password...">
                         </div>
                     </div>
-                    <! –– confirm password has type of text instead of password just for testing purposes -->
                         <div class="form-group">
                             <label>Confirm Password</label>
                             <div class="input-group"> <span class="input-group-addon"><span
                                         class="glyphicon glyphicon-resize-vertical"></span></span>
-                                <input type="text" class="form-control" name="confirm_password" id="confirm_password"
+                                <input type="password" class="form-control" name="confirm_password" id="confirm_password"
                                     placeholder="Confirm Password">
                             </div>
                         </div>
@@ -136,8 +135,9 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <input type="submit" onclick="runSubmitSignup();" name="submit" id="submit" value="Submit"
-                                class="btn btn-primary pull-right">
+                            <button type="submit" onclick="runSubmitSignup();" name="submit" id="submit" class="buttonload btn btn-primary pull-right">
+                              <i id="spinner"></i> Submit
+                           </button>
                         </div>
                         <br>
                         <br>
@@ -237,19 +237,21 @@
         }
 
         window.validateStrengthPassword = function validateConfirmPassword() {
-            const password = document.getElementById("password");
+            const password = document.getElementById("password").value;
             const stength = Signum.passtextStrength(password, ${login_details['passtextStrength']}, ${login_details['tolerance']});
             return stength >= 4;
         }
 
         window.runSubmitSignup = async function runSubmitSignup(){
-                if(!validateConfirmPassword() || !validateStrengthPassword()) {
-                    document.getElementById('errorMessage').style.visibility = "visible";
-                    return;
-                }
+                document.getElementById("spinner").classList.add("fa", "fa-spinner", "fa-spin");
 
                 let res;
                 try {
+                     if(!validateConfirmPassword() || !validateStrengthPassword()) {
+                         document.getElementById("spinner").classList.remove("fa", "fa-spinner", "fa-spin");
+                         document.getElementById('errorMessage').style.visibility = "visible";
+                         return;
+                     }
                      res = await Signum.executeSignup(
                         document.getElementById("username").value, //username
                         document.getElementById("password").value, //password
@@ -262,6 +264,7 @@
                       )
                 }catch (e) {
                      console.log(e)
+                     document.getElementById("spinner").classList.remove("fa", "fa-spinner", "fa-spin");
                      document.getElementById('errorMessage').style.visibility = "visible";
                      return;
                 }
@@ -272,6 +275,7 @@
                         return;
                 }
 
+                document.getElementById("spinner").classList.remove("fa", "fa-spinner", "fa-spin");
                 document.getElementById('errorMessage').style.visibility = "visible";
          }
     </script>
