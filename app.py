@@ -14,7 +14,8 @@ from file_password_repository import FilePasswordRepository
 from prepare_login_form import prepare_login_form
 from validate_auth import validate_login, validate_signup, extract_request_details
 
-with open("config.yml") as config_file:
+
+with open(os.path.join(os.path.dirname(__file__), "config.yml")) as config_file:
     configuration = yaml.load(config_file, Loader=yaml.FullLoader)
     print(configuration)
 
