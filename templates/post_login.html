@@ -8,6 +8,10 @@
     Successful login! Generated session key: ${session_key}
     <br>
     <br>
+    % if test_mode:
+        TEST MODE! NOT REALLY LOGGING IN!!!
+    % endif
+    <br>
     <a href="/">Home Page</a>
 </body>
 </html>

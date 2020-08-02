@@ -1,23 +1,34 @@
 import json
 import os
+import pprint
 from typing import Tuple
 
 import netifaces
 import requests
 import yaml
+import pkgutil
 from flask import Flask, Response, send_from_directory, request, jsonify
 from flask_mako import MakoTemplates, render_template
+from signum.authentication_preparer import Preparer
 from signum.staller import Staller
 from signum.state import StateEncryptor
 
 from file_password_repository import FilePasswordRepository
-from prepare_login_form import prepare_login_form
 from validate_auth import validate_login, validate_signup, extract_request_details
 
 
 with open(os.path.join(os.path.dirname(__file__), "config.yml")) as config_file:
     configuration = yaml.load(config_file, Loader=yaml.FullLoader)
-    print(configuration)
+
+    site_packages_path: str = next(filter(lambda m: m.name == 'signum', pkgutil.iter_modules())).module_finder.path
+    configuration["captcha_directory"] = os.path.join(site_packages_path, "captcha-images")
+
+    if os.environ.get('SIGNUM_TEST_MODE'):
+        configuration["SIGNUM_TEST_MODE"] = True
+
+    configuration["SIGNUM_TEST_MODE"] = True ################################################################################
+
+    pprint.pprint(configuration)
 
 try:
     gateways = netifaces.gateways()
@@ -54,22 +65,26 @@ def signum_page():
 
 @app.route('/')
 def login_form():
-    return render_template('login.html', name='mako', login_details=prepare_login_form(state_encryptor, configuration))
+    return render_template('login.html', name='mako', login_details=Preparer.prepare_authentication(state_encryptor,
+                                                                                                    configuration))
 
 
 @app.route('/signup')
 def signup_form():
-    return render_template('signup.html', name='mako', login_details=prepare_login_form(state_encryptor, configuration))
+    return render_template('signup.html', name='mako', login_details=Preparer.prepare_authentication(state_encryptor,
+                                                                                                     configuration))
 
 
 @app.route('/post-login')
 def post_login():
-    return render_template('post_login.html', name='mako', session_key=request.args["session_key"])
+    return render_template('post_login.html', name='mako', session_key=request.args["session_key"],
+                           test_mode=configuration["SIGNUM_TEST_MODE"])
 
 
 @app.route('/post-signup')
 def post_signup():
-    return render_template('post_signup.html', name='mako', session_key=request.args["session_key"])
+    return render_template('post_signup.html', name='mako', session_key=request.args["session_key"],
+                           test_mode=configuration["SIGNUM_TEST_MODE"])
 
 
 @app.route('/submit-signup', methods=['POST'])
