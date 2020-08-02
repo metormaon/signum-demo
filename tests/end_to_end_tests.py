@@ -17,25 +17,28 @@ import chromedriver_binary
 class TestLogin(unittest.TestCase):
     container = None
     process = None
-    
+
     @classmethod
     def setUpClass(cls):
         if os.name != 'nt':
             client = docker.from_env()
 
-            for previous_container in client.containers.list(filters={"ancestor": "signum-demo"}):
+            for previous_container in client.containers.list(filters={
+                                                    "name": "docker.pkg.github.com/metormaon/signum-demo/demo:master",
+                                                    "status": "running"}):
                 previous_container.kill()
 
-            cls.container = client.containers.run("signum-demo", detach=True, ports={"5000": "5000"},
-                                                  environment=["SIGNUM_TEST_MODE=True"])
+            cls.container = client.containers.run("docker.pkg.github.com/metormaon/signum-demo/demo:master",
+                                                  detach=True,
+                                                  ports={"5000": "5000"}, environment=["SIGNUM_TEST_MODE=True"])
         else:
-            cls.subprocess = subprocess.Popen("python ../app.py", shell=True)
+            cls.subprocess = subprocess.Popen("python ../app.py", shell=True, env={"SIGNUM_TEST_MODE": "True"})
 
     @classmethod
     def tearDownClass(cls):
         if cls.container:
             cls.container.kill()
-            
+
         if cls.process:
             cls.process.kill()
 
@@ -77,5 +80,3 @@ class TestLogin(unittest.TestCase):
 
         assert self.browser.current_url == url
         assert self.browser.find_element_by_id("errorMessage").is_displayed()
-
-
