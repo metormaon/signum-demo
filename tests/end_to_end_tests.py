@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 import time
@@ -16,23 +17,28 @@ import chromedriver_binary
 class TestLogin(unittest.TestCase):
     container = None
     process = None
-    
+
     @classmethod
     def setUpClass(cls):
         if os.name != 'nt':
             client = docker.from_env()
-            for previous_container in client.containers.list(filters={"ancestor": "signum-demo"}):
+
+            for previous_container in client.containers.list(filters={
+                                                    "name": "docker.pkg.github.com/metormaon/signum-demo/demo:master",
+                                                    "status": "running"}):
                 previous_container.kill()
 
-            cls.container = client.containers.run("signum-demo", detach=True, ports={"5000": "5000"})
+            cls.container = client.containers.run("docker.pkg.github.com/metormaon/signum-demo/demo:master",
+                                                  detach=True,
+                                                  ports={"5000": "5000"}, environment=["SIGNUM_TEST_MODE=True"])
         else:
-            cls.subprocess = subprocess.Popen("python ../app.py", shell=True)
+            cls.subprocess = subprocess.Popen("python ../app.py", shell=True, env={"SIGNUM_TEST_MODE": "True"})
 
     @classmethod
     def tearDownClass(cls):
         if cls.container:
             cls.container.kill()
-            
+
         if cls.process:
             cls.process.kill()
 
@@ -48,18 +54,22 @@ class TestLogin(unittest.TestCase):
     def tearDown(self) -> None:
         self.browser.close()
 
-    def test_failure(self):
+    def test_sign_up(self):
         username = self.browser.find_element_by_id("username")
         username.clear()
-        username.send_keys("unregistered_user")
+        username.send_keys("test_user")
 
         password = self.browser.find_element_by_id("password")
         password.clear()
         password.send_keys("123456")
 
+        state = json.loads(self.browser.find_element_by_id("unencrypted_state").text)
+
+        captcha_solution = state["captcha_solutions"][0]
+
         captcha = self.browser.find_element_by_id("captcha")
         captcha.clear()
-        captcha.send_keys("something")
+        captcha.send_keys(captcha_solution)
 
         url = self.browser.current_url
 
@@ -70,5 +80,3 @@ class TestLogin(unittest.TestCase):
 
         assert self.browser.current_url == url
         assert self.browser.find_element_by_id("errorMessage").is_displayed()
-
-

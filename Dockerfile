@@ -8,6 +8,7 @@ ADD static /static
 ADD templates /templates
 ADD resources /resources
 ADD *.py /
+ADD config.yml /
 
 EXPOSE 5000
 

@@ -1,4 +1,4 @@
-from typing import Tuple, Dict, List, Union
+from typing import Tuple, Dict, List, Union, Any
 
 from flask import request
 from signum import util
@@ -17,7 +17,7 @@ def extract_request_details(req: request) -> Tuple[Dict[str, str], Dict[str, str
 
 
 def validate_signup(request_details: Dict[str, str], headers: Dict[str, str], state_encryptor: StateEncryptor,
-                    password_database: PasswordRepository, configuration: Dict[str, Union[str, List[str]]]) -> \
+                    password_database: PasswordRepository, configuration: Dict[str, Any]) -> \
         Tuple[bool, object]:
     try:
         auth_validation, details = AuthenticationValidator.validate(request_details=request_details, headers=headers,
@@ -30,10 +30,11 @@ def validate_signup(request_details: Dict[str, str], headers: Dict[str, str], st
         username = headers.get("X-Username")
         password = headers.get("X-hashed-Passtext")
 
-        try:
-            password_database.save_password(username=username, password=password)
-        except ValueError as e:
-            return failure("username-password", str(e))
+        if "SIGNUM_TEST_MODE" not in configuration:
+            try:
+                password_database.save_password(username=username, password=password)
+            except ValueError as e:
+                return failure("username-password", str(e))
 
         return True, {
             "visible_response": {
@@ -48,7 +49,7 @@ def validate_signup(request_details: Dict[str, str], headers: Dict[str, str], st
 
 
 def validate_login(request_details: Dict[str, str], headers: Dict[str, str], state_encryptor: StateEncryptor,
-                   password_database: PasswordRepository, configuration: Dict[str, Union[str, List[str]]]) -> \
+                   password_database: PasswordRepository, configuration: Dict[str, Any]) -> \
         Tuple[bool, object]:
     try:
         auth_validation, details = AuthenticationValidator.validate(request_details=request_details, headers=headers,

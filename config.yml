@@ -35,6 +35,12 @@ state_aging_tolerance: 330
 password_file: password_repository.json
 password_hash_salt: 7N4qR1eGVnWplHk6aEuH
 
+#Client side
+password_minimum_length: 8
+passphrase_minimum_length: 20
+client_hash_cycles: 250
+client_hash_length: 20
+
 #--------------------
 
 ## Staller

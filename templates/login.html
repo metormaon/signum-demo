@@ -37,6 +37,9 @@
                             </div>
                         </div>
                         <input type="hidden" name="csrf" id="csrf" required value="${login_details["csrfToken"]}">
+                        % if login_details["unencrypted_state"]:
+                        <input type="hidden" name="state" id="state" required value="${login_details["unencrypted_state"]}">
+                        % endif
                         <div class="form-group">
                             <img src="${login_details["captcha"]}" alt="CAPTCHA">
                         </div>
