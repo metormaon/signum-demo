@@ -19,29 +19,33 @@ class TestLogin(unittest.TestCase):
     container = None
     process = None
 
-    # @classmethod
-    # def setUpClass(cls):
-    #     if os.name != 'nt':
-    #         client = docker.from_env()
-    #
-    #         for previous_container in client.containers.list(filters={
-    #                                                 "ancestor": "docker.pkg.github.com/metormaon/signum-demo/demo:noam-enhancements",
-    #                                                 "status": "running"}):
-    #             previous_container.kill()
-    #
-    #         cls.container = client.containers.run("docker.pkg.github.com/metormaon/signum-demo/demo:noam-enhancements",
-    #                                               detach=True,
-    #                                               ports={"5000": "5000"}, environment=["SIGNUM_TEST_MODE=True"])
-    #     else:
-    #         cls.subprocess = subprocess.Popen("python ../app.py", shell=True, env={"SIGNUM_TEST_MODE": "True"})
-    #
-    # @classmethod
-    # def tearDownClass(cls):
-    #     if cls.container:
-    #         cls.container.kill()
-    #
-    #     if cls.process:
-    #         cls.process.kill()
+    @classmethod
+    def setUpClass(cls):
+        if os.name != 'nt':
+            client = docker.from_env()
+
+            image_name = "docker.pkg.github.com/metormaon/signum-demo/demo"
+            image_tag = "noam-enhancements"
+
+            for previous_container in client.containers.list(filters={
+                                                    "ancestor": f"{image_name}:{image_tag}",
+                                                    "status": "running"}):
+                previous_container.kill()
+
+            cls.container = client.containers.run(f"{image_name}:{image_tag}",
+                                                  detach=True,
+                                                  ports={"5000": "5000"}, environment=["SIGNUM_TEST_MODE=True"],
+                                                  remove=True)
+        else:
+            cls.subprocess = subprocess.Popen("python ../app.py", shell=True, env={"SIGNUM_TEST_MODE": "True"})
+
+    @classmethod
+    def tearDownClass(cls):
+        if cls.container:
+            cls.container.kill()
+
+        if cls.process:
+            cls.process.kill()
 
     def setUp(self) -> None:
         self.browser = webdriver.Chrome()
@@ -68,7 +72,7 @@ class TestLogin(unittest.TestCase):
         password.clear()
         password.send_keys("123456abcEE$")
 
-        captcha_options_text = self.browser.find_element_by_id("state").get_attribute("value")
+        captcha_options_text = self.browser.find_element_by_id("captcha_solution").get_attribute("value")
 
         captcha_options = json.loads(captcha_options_text.replace("\'", "\""))
 
@@ -81,7 +85,7 @@ class TestLogin(unittest.TestCase):
         submit = self.browser.find_element_by_id("submit")
         submit.click()
 
-        WebDriverWait(self.browser, 30).until(
+        WebDriverWait(self.browser, 60).until(
             expected_conditions.url_contains("http://127.0.0.1:5000/post-signup")
         )
 
@@ -95,7 +99,7 @@ class TestLogin(unittest.TestCase):
         password.clear()
         password.send_keys("123456abcEE$")
 
-        captcha_options_text = self.browser.find_element_by_id("state").get_attribute("value")
+        captcha_options_text = self.browser.find_element_by_id("captcha_solution").get_attribute("value")
 
         captcha_options = json.loads(captcha_options_text.replace("\'", "\""))
 
@@ -108,6 +112,6 @@ class TestLogin(unittest.TestCase):
         submit = self.browser.find_element_by_id("submit")
         submit.click()
 
-        WebDriverWait(self.browser, 30).until(
+        WebDriverWait(self.browser, 60).until(
             expected_conditions.url_contains("http://127.0.0.1:5000/post-login")
         )
