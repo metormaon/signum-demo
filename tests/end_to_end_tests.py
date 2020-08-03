@@ -3,6 +3,7 @@ import os
 import subprocess
 import time
 import unittest
+
 import docker as docker
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
@@ -24,11 +25,11 @@ class TestLogin(unittest.TestCase):
             client = docker.from_env()
 
             for previous_container in client.containers.list(filters={
-                                                    "name": "docker.pkg.github.com/metormaon/signum-demo/demo:master",
+                                                    "ancestor": "docker.pkg.github.com/metormaon/signum-demo/demo:merge",
                                                     "status": "running"}):
                 previous_container.kill()
 
-            cls.container = client.containers.run("docker.pkg.github.com/metormaon/signum-demo/demo:master",
+            cls.container = client.containers.run("docker.pkg.github.com/metormaon/signum-demo/demo:merge",
                                                   detach=True,
                                                   ports={"5000": "5000"}, environment=["SIGNUM_TEST_MODE=True"])
         else:
@@ -63,7 +64,9 @@ class TestLogin(unittest.TestCase):
         password.clear()
         password.send_keys("123456")
 
-        state = json.loads(self.browser.find_element_by_id("unencrypted_state").text)
+        state_text = self.browser.find_element_by_id("state").get_attribute("value")
+
+        state = json.loads(state_text)
 
         captcha_solution = state["captcha_solutions"][0]
 
