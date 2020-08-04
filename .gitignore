@@ -131,3 +131,4 @@ dmypy.json
 #local files
 /.idea/
 /tests/chromedriver.exe
+/resources/test_password_database.json

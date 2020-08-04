@@ -30,11 +30,10 @@ def validate_signup(request_details: Dict[str, str], headers: Dict[str, str], st
         username = headers.get("X-Username")
         password = headers.get("X-hashed-Passtext")
 
-        if "SIGNUM_TEST_MODE" not in configuration:
-            try:
-                password_database.save_password(username=username, password=password)
-            except ValueError as e:
-                return failure("username-password", str(e))
+        try:
+            password_database.save_password(username=username, password=password)
+        except ValueError as e:
+            return failure("username-password", str(e))
 
         return True, {
             "visible_response": {

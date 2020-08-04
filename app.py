@@ -23,10 +23,9 @@ with open(os.path.join(os.path.dirname(__file__), "config.yml")) as config_file:
     site_packages_path: str = next(filter(lambda m: m.name == 'signum', pkgutil.iter_modules())).module_finder.path
     configuration["captcha_directory"] = os.path.join(site_packages_path, "captcha-images")
 
-    if os.environ.get('SIGNUM_TEST_MODE'):
+    if configuration.get("SIGNUM_TEST_MODE") or os.environ.get('SIGNUM_TEST_MODE'):
         configuration["SIGNUM_TEST_MODE"] = True
-
-    configuration["SIGNUM_TEST_MODE"] = True ################################################################################
+        configuration["password_file"] = "test_password_database.json"
 
     pprint.pprint(configuration)
 

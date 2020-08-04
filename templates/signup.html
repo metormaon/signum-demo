@@ -89,7 +89,7 @@
 <body>
     <div class="container">
         <div class="form-group">
-            <a href="/">login</a>
+            <a href="/">Already registered? Login!</a>
         </div>
         <h3>Registration</h3>
         <hr>
@@ -124,8 +124,9 @@
                             </div>
                         </div>
                         <input type="hidden" name="csrf" id="csrf" required value="${login_details["csrfToken"]}">
-                        % if login_details["unencrypted_state"]:
-                        <input type="hidden" name="state" id="state" required value="${login_details["unencrypted_state"]}">
+                        % if login_details.get("unencrypted_state"):
+                        <input type="hidden" name="captcha_solution" id="captcha_solution"
+                               required value="${login_details["unencrypted_state"]["captcha_solutions"]}">
                         % endif
                         <div class="form-group">
                             <img src="${login_details["captcha"]}" alt="CAPTCHA">
