@@ -2,7 +2,7 @@ import json
 import os
 import pprint
 from typing import Tuple
-
+import logging
 import netifaces
 import requests
 import yaml
@@ -27,13 +27,13 @@ with open(os.path.join(os.path.dirname(__file__), "config.yml")) as config_file:
         configuration["SIGNUM_TEST_MODE"] = True
         configuration["password_file"] = "test_password_database.json"
 
-    pprint.pprint(configuration)
+    logging.info(pprint.pformat(configuration))
 
 try:
     gateways = netifaces.gateways()
     configuration["self_ip_addresses"].append(gateways['default'][netifaces.AF_INET][0])
 except Exception as e:
-    print(str(e))
+    logging.error(e, exec_info=True)
     pass
 
 app = Flask(__name__)
@@ -98,8 +98,8 @@ def submit_signup():
     if validation:
         return user_response, 200
     else:
-        print("Failed authentication: " + json.dumps(details))
-        print("Request: " + str(request.__dict__.items()))
+        logging.error("Failed authentication: " + json.dumps(details))
+        logging.error("Request: " + str(request.__dict__.items()))
         return user_response, 401
 
 
@@ -136,8 +136,8 @@ def submit_login():
     if validation:
         return user_response, 200
     else:
-        print("Failed authentication: " + json.dumps(details))
-        print("Full request: " + str(request.__dict__.items()))
+        logging.info("Failed authentication: " + json.dumps(details))
+        logging.info("Full request: " + str(request.__dict__.items()))
         return user_response, 401
 
 

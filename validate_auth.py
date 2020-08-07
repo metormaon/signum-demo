@@ -1,3 +1,4 @@
+import logging
 from typing import Tuple, Dict, List, Union, Any
 
 from flask import request
@@ -43,7 +44,7 @@ def validate_signup(request_details: Dict[str, str], headers: Dict[str, str], st
         }
 
     except Exception as e:
-        print(e)
+        logging.error(e, exec_info=True)
         return failure("General", str(e))
 
 
@@ -74,7 +75,7 @@ def validate_login(request_details: Dict[str, str], headers: Dict[str, str], sta
         }
 
     except Exception as e:
-        print(e)
+        logging.error(e, exec_info=True)
         return failure("General", str(e))
 
 
