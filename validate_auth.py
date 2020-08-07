@@ -7,6 +7,8 @@ from signum.authentication_validator import AuthenticationValidator
 from signum.password_repository import PasswordRepository
 from signum.state import StateEncryptor
 
+logging.basicConfig(level=logging.INFO)
+
 
 def extract_request_details(req: request) -> Tuple[Dict[str, str], Dict[str, str]]:
     return {

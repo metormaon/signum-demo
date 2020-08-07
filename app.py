@@ -16,6 +16,7 @@ from signum.state import StateEncryptor
 from file_password_repository import FilePasswordRepository
 from validate_auth import validate_login, validate_signup, extract_request_details
 
+logging.basicConfig(level=logging.INFO)
 
 with open(os.path.join(os.path.dirname(__file__), "config.yml")) as config_file:
     configuration = yaml.load(config_file, Loader=yaml.FullLoader)
