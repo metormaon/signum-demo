@@ -228,11 +228,11 @@
             const minimumCharactersPassword = JSON.parse(JSON.stringify(${login_details['passtextStrength']})).minimumCharactersPassword;
             const minimumAlphabetPassphrase = JSON.parse(JSON.stringify(${login_details['tolerance']})).minimumAlphabetPassphrase;
             return "Minimum " + minimumCharactersPassword + " characters in length\n" +
-                    "Contains of the following items:\n" +
-                    "- Uppercase Letters\n" +
-                    "- Lowercase Letters\n" +
-                    "- Numbers Letters or Symbols\n" +
-                    "Or passphrase " + minimumAlphabetPassphrase + " letters in length"
+                    "Including:\n" +
+                    "- Uppercase letters\n" +
+                    "- Lowercase letters\n" +
+                    "- Digits or symbols\n" +
+                    "Or a passphrase of " + minimumAlphabetPassphrase + " characters in length"
         }
 
         window.validateConfirmPassword = function validateConfirmPassword() {
