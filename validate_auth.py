@@ -1,3 +1,4 @@
+import logging
 from typing import Tuple, Dict, List, Union, Any
 
 from flask import request
@@ -5,6 +6,8 @@ from signum import util
 from signum.authentication_validator import AuthenticationValidator
 from signum.password_repository import PasswordRepository
 from signum.state import StateEncryptor
+
+logging.basicConfig(level=logging.INFO)
 
 
 def extract_request_details(req: request) -> Tuple[Dict[str, str], Dict[str, str]]:
@@ -43,7 +46,7 @@ def validate_signup(request_details: Dict[str, str], headers: Dict[str, str], st
         }
 
     except Exception as e:
-        print(e)
+        logging.error(e, exec_info=True)
         return failure("General", str(e))
 
 
@@ -74,7 +77,7 @@ def validate_login(request_details: Dict[str, str], headers: Dict[str, str], sta
         }
 
     except Exception as e:
-        print(e)
+        logging.error(e, exec_info=True)
         return failure("General", str(e))
 
 
